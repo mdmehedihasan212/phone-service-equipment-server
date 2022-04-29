@@ -8,8 +8,10 @@ const port = process.env.PORT || 5000;
 app.use(cors())
 app.use(express.json())
 
+// heroku deploy link
+// https://fathomless-hamlet-80982.herokuapp.com/
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@phonegagate.m6mbj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -24,6 +26,14 @@ async function run() {
             const cursor = phoneCollection.find(query);
             const phone = await cursor.toArray();
             res.send(phone);
+        })
+
+        // GET SINGLE SEARCH ID
+        app.get('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const singlePhone = await phoneCollection.findOne(query);
+            res.send(singlePhone);
         })
 
     } finally {
