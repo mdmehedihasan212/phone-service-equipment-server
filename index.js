@@ -42,6 +42,14 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const singlePhoneDelete = await phoneCollection.deleteOne(query);
             res.send(singlePhoneDelete);
+            console.log(singlePhoneDelete);
+        })
+
+        // POST ADD NEW ITEM
+        app.post('/product', async (req, res) => {
+            const newPost = req.body;
+            const result = await haiku.insertOne(newPost);
+            res.send(result);
         })
 
     } finally {
