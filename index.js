@@ -36,6 +36,14 @@ async function run() {
             res.send(singlePhone);
         })
 
+        // DELETE SINGLE MANAGE PRODUCT
+        app.delete('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const singlePhoneDelete = await phoneCollection.deleteOne(query);
+            res.send(singlePhoneDelete);
+        })
+
     } finally {
 
     }
