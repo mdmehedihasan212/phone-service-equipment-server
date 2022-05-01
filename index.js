@@ -48,8 +48,9 @@ async function run() {
         // POST ADD NEW ITEM
         app.post('/product', async (req, res) => {
             const newPost = req.body;
-            const result = await haiku.insertOne(newPost);
+            const result = await phoneCollection.insertOne(newPost);
             res.send(result);
+            console.log(result);
         })
 
     } finally {
