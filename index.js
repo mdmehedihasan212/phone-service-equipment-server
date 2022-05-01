@@ -28,6 +28,15 @@ async function run() {
             res.send(phone);
         })
 
+        // GET SINGLE SEARCH QUERY
+        app.get('/product', async (req, res) => {
+            const email = req.query.email;
+            const query = { email };
+            const cursor = phoneCollection.findOne(query);
+            const singleGetQuery = await cursor.toArray();
+            res.send(singleGetQuery);
+        })
+
         // GET SINGLE SEARCH ID
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
