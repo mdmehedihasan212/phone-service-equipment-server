@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,7 +21,16 @@ async function run() {
         await client.connect();
         const phoneCollection = client.db("phoneGarage").collection("phone");
 
-        // GET ALL 
+        // JWT POST
+        app.post('/login', (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.JWT_TOKEN, {
+                expiresIn: '1d'
+            })
+            res.send({ accessToken })
+        })
+
+        // GET ALL PRODUCT
         app.get('/product', async (req, res) => {
             const query = {};
             const cursor = phoneCollection.find(query);
@@ -32,8 +42,9 @@ async function run() {
         app.get('/product', async (req, res) => {
             const email = req.query.email;
             const query = { email };
-            const cursor = phoneCollection.find(query);
+            const cursor = phoneCollection.findOne(query);
             const singleGetQuery = await cursor.toArray();
+            console.log(email);
             res.send(singleGetQuery);
         })
 
