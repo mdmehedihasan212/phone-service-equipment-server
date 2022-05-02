@@ -20,6 +20,7 @@ async function run() {
     try {
         await client.connect();
         const phoneCollection = client.db("phoneGarage").collection("phone");
+        const orderCollection = client.db("phoneGarage").collection("order");
 
         // JWT POST
         app.post('/login', (req, res) => {
@@ -39,10 +40,10 @@ async function run() {
         })
 
         // GET SINGLE SEARCH QUERY
-        app.get('/product', async (req, res) => {
+        app.get('/order', async (req, res) => {
             const email = req.query.email;
             const query = { email };
-            const cursor = phoneCollection.findOne(query);
+            const cursor = orderCollection.findOne(query);
             const singleGetQuery = await cursor.toArray();
             console.log(email);
             res.send(singleGetQuery);
@@ -66,9 +67,9 @@ async function run() {
         })
 
         // POST ADD NEW ITEM
-        app.post('/product', async (req, res) => {
+        app.post('/order', async (req, res) => {
             const newPost = req.body;
-            const result = await phoneCollection.insertOne(newPost);
+            const result = await orderCollection.insertOne(newPost);
             res.send(result);
             console.log(result);
         })
