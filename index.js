@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express();
@@ -12,7 +13,23 @@ app.use(express.json())
 // heroku deploy link
 // https://fathomless-hamlet-80982.herokuapp.com/
 
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorize access' })
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.JWT_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        console.log('decoded', decoded);
+        req.decoded = decoded;
+    })
+    next();
+}
+
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@phonegagate.m6mbj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -40,13 +57,18 @@ async function run() {
         })
 
         // GET SINGLE SEARCH QUERY
-        app.get('/order', async (req, res) => {
+        app.get('/order', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            const query = { email };
-            const cursor = orderCollection.findOne(query);
-            const singleGetQuery = await cursor.toArray();
-            console.log(email);
-            res.send(singleGetQuery);
+            if (email === decodedEmail) {
+                const query = { email };
+                const cursor = orderCollection.find(query);
+                const orders = await cursor.toArray();
+                res.send(orders);
+            }
+            else {
+                res.status(403).send({ message: 'forbidden access' })
+            }
         })
 
         // GET SINGLE SEARCH ID
