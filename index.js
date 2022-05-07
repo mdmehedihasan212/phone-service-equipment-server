@@ -1,17 +1,22 @@
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
-require('dotenv').config()
-const app = express();
+require('dotenv').config();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors())
-app.use(express.json())
+app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(express.json());
 
 // heroku deploy link
 // https://fathomless-hamlet-80982.herokuapp.com/
+
+// GET Main
+app.get('/', (req, res) => {
+    res.send('Phone Garage Client Running!')
+})
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -23,10 +28,9 @@ function verifyJWT(req, res, next) {
         if (err) {
             return res.status(403).send({ message: 'forbidden access' })
         }
-        console.log('decoded', decoded);
         req.decoded = decoded;
+        next();
     })
-    next();
 }
 
 
@@ -37,7 +41,6 @@ async function run() {
     try {
         await client.connect();
         const phoneCollection = client.db("phoneGarage").collection("phone");
-        const orderCollection = client.db("phoneGarage").collection("order");
 
         // JWT POST
         app.post('/login', (req, res) => {
@@ -57,12 +60,12 @@ async function run() {
         })
 
         // GET SINGLE SEARCH QUERY
-        app.get('/order', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const email = req.query.email;
+        app.get('/product', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded?.email;
+            const email = req.query?.email;
             if (email === decodedEmail) {
-                const query = { email };
-                const cursor = orderCollection.find(query);
+                const query = { email: email };
+                const cursor = phoneCollection.find(query);
                 const orders = await cursor.toArray();
                 res.send(orders);
             }
@@ -85,15 +88,13 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const singlePhoneDelete = await phoneCollection.deleteOne(query);
             res.send(singlePhoneDelete);
-            console.log(singlePhoneDelete);
         })
 
         // POST ADD NEW ITEM
-        app.post('/order', async (req, res) => {
+        app.post('/product', async (req, res) => {
             const newPost = req.body;
-            const result = await orderCollection.insertOne(newPost);
+            const result = await phoneCollection.insertOne(newPost);
             res.send(result);
-            console.log(result);
         })
 
     } finally {
@@ -101,11 +102,6 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
-// GET Main
-app.get('/', (req, res) => {
-    res.send('Phone Garage Client Running!')
-})
 
 // LISTEN Main
 app.listen(port, () => {
