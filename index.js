@@ -7,7 +7,7 @@ require('dotenv').config();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors());
 app.use(express.json());
 
 // heroku deploy link
@@ -60,14 +60,15 @@ async function run() {
         })
 
         // GET SINGLE SEARCH QUERY
-        app.get('/product', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded?.email;
-            const email = req.query?.email;
+        app.get('/products', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+
             if (email === decodedEmail) {
-                const query = { email: email };
+                const query = { email };
                 const cursor = phoneCollection.find(query);
-                const orders = await cursor.toArray();
-                res.send(orders);
+                const items = await cursor.toArray();
+                res.send(items);
             }
             else {
                 res.status(403).send({ message: 'forbidden access' })
@@ -105,5 +106,5 @@ run().catch(console.dir);
 
 // LISTEN Main
 app.listen(port, () => {
-    console.log('Phone Garage Server Running!');
+    console.log('Phone Garage Server Running!', port);
 })
