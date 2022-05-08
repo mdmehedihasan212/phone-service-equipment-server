@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 })
 
 function verifyJWT(req, res, next) {
+
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).send({ message: 'unauthorize access' })
@@ -46,7 +47,7 @@ async function run() {
         app.post('/login', (req, res) => {
             const user = req.body;
             const accessToken = jwt.sign(user, process.env.JWT_TOKEN, {
-                expiresIn: '1d'
+                expiresIn: '7d'
             })
             res.send({ accessToken })
         })
@@ -60,10 +61,9 @@ async function run() {
         })
 
         // GET SINGLE SEARCH QUERY
-        app.get('/products', verifyJWT, async (req, res) => {
+        app.get('/items', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
-
             if (email === decodedEmail) {
                 const query = { email };
                 const cursor = phoneCollection.find(query);
@@ -78,9 +78,9 @@ async function run() {
         // GET SINGLE SEARCH ID
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const singlePhone = await phoneCollection.findOne(query);
-            res.send(singlePhone);
+            const param = { _id: ObjectId(id) };
+            const phoneId = await phoneCollection.findOne(param);
+            res.send(phoneId);
         })
 
         // DELETE SINGLE MANAGE PRODUCT
