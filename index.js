@@ -1,6 +1,6 @@
 const express = require('express');
-const app = express();
 const cors = require('cors');
+const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -13,10 +13,10 @@ app.use(express.json());
 // heroku deploy link
 // https://fathomless-hamlet-80982.herokuapp.com/
 
-// GET Main
+// GET MAIN
 app.get('/', (req, res) => {
-    res.send('Phone Garage Client Running!')
-})
+    res.send('Phone Garage Server Running!')
+});
 
 function verifyJWT(req, res, next) {
 
@@ -25,13 +25,13 @@ function verifyJWT(req, res, next) {
         return res.status(401).send({ message: 'unauthorize access' })
     }
     const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.JWT_TOKEN, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
         if (err) {
             return res.status(403).send({ message: 'forbidden access' })
         }
         req.decoded = decoded;
         next();
-    })
+    });
 }
 
 
@@ -46,11 +46,11 @@ async function run() {
         // JWT POST
         app.post('/login', (req, res) => {
             const user = req.body;
-            const accessToken = jwt.sign(user, process.env.JWT_TOKEN, {
-                expiresIn: '7d'
+            const accessToken = jwt.sign(user, process.env.JWT_TOKEN_SECRET, {
+                expiresIn: '1d'
             })
             res.send({ accessToken })
-        })
+        });
 
         // GET ALL PRODUCT
         app.get('/product', async (req, res) => {
@@ -58,7 +58,7 @@ async function run() {
             const cursor = phoneCollection.find(query);
             const phone = await cursor.toArray();
             res.send(phone);
-        })
+        });
 
         // GET SINGLE SEARCH QUERY
         app.get('/items', verifyJWT, async (req, res) => {
@@ -73,7 +73,7 @@ async function run() {
             else {
                 res.status(403).send({ message: 'forbidden access' })
             }
-        })
+        });
 
         // GET SINGLE SEARCH ID
         app.get('/product/:id', async (req, res) => {
@@ -81,7 +81,7 @@ async function run() {
             const param = { _id: ObjectId(id) };
             const phoneId = await phoneCollection.findOne(param);
             res.send(phoneId);
-        })
+        });
 
         // DELETE SINGLE MANAGE PRODUCT
         app.delete('/product/:id', async (req, res) => {
@@ -89,22 +89,22 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const singlePhoneDelete = await phoneCollection.deleteOne(query);
             res.send(singlePhoneDelete);
-        })
+        });
 
         // POST ADD NEW ITEM
         app.post('/product', async (req, res) => {
             const newPost = req.body;
             const result = await phoneCollection.insertOne(newPost);
             res.send(result);
-        })
+        });
 
     } finally {
-
+        // await client.close();
     }
 }
 run().catch(console.dir);
 
-// LISTEN Main
+// LISTEN MAIN
 app.listen(port, () => {
-    console.log('Phone Garage Server Running!', port);
-})
+    console.log(`Phone Garage Server Running! ${port}`)
+});
